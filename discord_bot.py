@@ -104,6 +104,7 @@ def report_to_receiver():
     receiver = os.getenv('RECEIVER_EMAIL_ADDRESS')
 
     email_sender_client.send_email('daily_report', email_body, [receiver])
+    reports_list.clear()
 
 
 def main():
