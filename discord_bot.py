@@ -1,5 +1,6 @@
 from audio_helpers import is_supported_audio_extension, audio_to_text
 import discord
+import schedule
 import os
 from dotenv import load_dotenv
 from datetime import datetime
@@ -94,8 +95,6 @@ async def on_message(message):
         # Delete the file after processing
         os.remove(audio_filename)
 
-        report_to_receiver()
-
 
 def report_to_receiver():
     email_body = 'This is your reports:\n'
@@ -108,6 +107,7 @@ def report_to_receiver():
 
 
 def main():
+    schedule.every().day.at("20:00").do(report_to_receiver)
     # Run the bot
     discord_client.run(DISCORD_TOKEN)
 
