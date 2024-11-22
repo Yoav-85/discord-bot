@@ -97,10 +97,13 @@ async def on_message(message):
 
 
 def report_to_receiver():
+    receiver = os.getenv('RECEIVER_EMAIL_ADDRESS')
+
     email_body = 'This is your reports:\n'
     email_body += '\n'.join(reports_list)
 
-    receiver = os.getenv('RECEIVER_EMAIL_ADDRESS')
+    if not reports_list:
+        email_body = 'There were no reports today'
 
     email_sender_client.send_email('daily_report', email_body, [receiver])
     reports_list.clear()
