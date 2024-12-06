@@ -1,3 +1,4 @@
+from AI_Image import generate_ai_image
 from audio_helpers import is_supported_audio_extension, audio_to_text
 import discord
 import schedule
@@ -100,6 +101,9 @@ async def on_message(message):
             await report_curse(message, transcription)
             await Ban_Users(message.author,message)
 
+        if transcription.splitlines('A I'):
+             await Send_AI_Picture(transcription,message)
+
         await handle_command(transcription, message)
 
         # Delete the file after processing
@@ -117,6 +121,10 @@ def report_to_receiver():
 
     email_sender_client.send_email('daily_report', email_body, [receiver])
     reports_list.clear()
+
+async def Send_AI_Picture(transcription, message):
+
+    await message.channel.send(generate_ai_image(transcription))
 
 
 def main():
