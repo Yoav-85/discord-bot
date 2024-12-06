@@ -1,36 +1,25 @@
 import requests
-from PIL import Image
-from io import BytesIO
-import time
+import os
+from dotenv import load_dotenv
+load_dotenv()
 def generate_ai_image(prompt):
+    # Your DeepAI API key
+    api_key = os.getenv("API_KEY")
+    # DeepAI API endpoint for Text-to-Image
+    url = "https://api.deepai.org/api/text2img"
 
-    # Define the URL for Craiyon API
-    url = "https://backend.craiyon.com/generate"
+    # Send POST request
+    response = requests.post(url, data={'text': prompt}, headers={'api-key': api_key})
+    print(response)
 
-    # Define the data to send (prompt)
-    data = {
-        'prompt': prompt
-    }
-
-    # Send POST request to Craiyon API
-    response = requests.post(url, data=data)
-
-    # Check if the request was successful
+    # Save the generated image
     if response.status_code == 200:
-        # Craiyon typically returns a list of images
-        # The response contains URLs of the generated images
-        images = response.json()['images']
-
-        # Download the first image in the list
-        image_url = images[0]
-        img_response = requests.get(image_url)
-
-        if img_response.status_code == 200:
-            # Open the image from the response content
-            img = Image.open(BytesIO(img_response.content))
-
-            # Save the image to a file
-            img.save("craiyon_image.png")
-            print("Image saved as craiyon_image.png")
+        img_url = response.json()['output_url']
+        img_data = requests.get(img_url).content
+        with open("deepai_generated_image.jpg", "wb") as file:
+            file.write(img_data)
+        print("Image saved as deepai_generated_image.jpg")
     else:
         print(f"Error: {response.status_code}")
+
+#TODO fix the problem line 12
