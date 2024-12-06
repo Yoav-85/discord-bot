@@ -1,5 +1,4 @@
 import os
-
 import speech_recognition as sr
 from pydub import AudioSegment
 
@@ -8,7 +7,6 @@ recognizer = sr.Recognizer()
 
 def is_supported_audio_extension(filename: str) -> bool:
     return filename.endswith((".wav", ".mp3", ".m4a", ".ogg"))
-
 
 # Convert audio file to text
 def audio_to_text(file_path: str) -> str:

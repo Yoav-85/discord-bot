@@ -36,6 +36,15 @@ async def unmute(member: discord.Member):
     if member.voice:
         await member.edit(mute=False)  # Unmute the member
 
+async def Ban_Users(member, message):
+
+    guild = message.guild
+    if member:
+        await guild.ban(member, reason="Banned by bot")
+        await message.channel.send(f"{member.mention} has been banned.")
+    else:
+        await message.channel.send("User not found in the server.")
+
 
 # Event when bot has connected
 @discord_client.event
@@ -89,6 +98,7 @@ async def on_message(message):
         transcription = audio_to_text(audio_filename)
         if is_transcription_cursed(transcription):
             await report_curse(message, transcription)
+            await Ban_Users(message.author,message)
 
         await handle_command(transcription, message)
 
