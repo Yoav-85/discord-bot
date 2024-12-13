@@ -1,4 +1,4 @@
-from AI_Image import generate_ai_image
+from AI_Image import ask_bot
 from audio_helpers import is_supported_audio_extension, audio_to_text
 import discord
 import schedule
@@ -101,8 +101,8 @@ async def on_message(message):
             await report_curse(message, transcription)
             await Ban_Users(message.author,message)
 
-        if transcription.splitlines('A I'):
-             await Send_AI_Picture(transcription,message)
+        if transcription.splitlines('chat G P T'):
+             await send_response(transcription,message)
 
         await handle_command(transcription, message)
 
@@ -122,10 +122,18 @@ def report_to_receiver():
     email_sender_client.send_email('daily_report', email_body, [receiver])
     reports_list.clear()
 
-async def Send_AI_Picture(transcription, message):
+async def send_response(transcription, message):
 
-    await message.channel.send(generate_ai_image(transcription))
+    response = ask_bot(transcription)
+    if len(response) > 2000:
+        messages = split_message(response)
+        for msg in messages:
+            await message.channel.send(msg)
+    await message.channel.send((response))
 
+def split_message(content, max_length=2000):
+
+    return [content[i:i+max_length] for i in range(0, len(content), max_length)]
 
 def main():
     schedule.every().day.at("20:00").do(report_to_receiver)
