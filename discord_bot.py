@@ -11,17 +11,22 @@ from email_sender import EmailSender
 load_dotenv()
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+GUILD_ID = int(os.getenv('GUILD_ID'))
 
 intents = discord.Intents.default()
 intents.messages = True
 intents.message_content = True
+intents.members = True
 intents.guilds = True
 # Set up the Discord client
 discord_client = discord.Client(intents=intents)
 
+
+
 SENDER_EMAIL_ADDRESS = os.getenv('SENDER_EMAIL_ADDRESS')
 SENDER_EMAIL_PASSWORD = os.getenv('SENDER_EMAIL_PASSWORD')
 email_sender_client = EmailSender(SENDER_EMAIL_ADDRESS, SENDER_EMAIL_PASSWORD)
+
 
 reports_list = []
 
@@ -63,10 +68,18 @@ def is_transcription_cursed(transcription: str) -> bool:
 
 
 async def report_curse(message, transcription):
-    await message.channel.send(f"{message.author} thats your last warning")
+    await message.channel.send(f"{message.author} Thats enough")
     body = f"{message.author} sent {transcription} in {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")} "
     reports_list.append(body)
 
+async def send_response(transcription, message):
+
+    response = ask_bot(transcription)
+    if len(response) > 2000:
+        messages = split_message(response)
+        for msg in messages:
+            await message.channel.send(msg)
+    await message.channel.send((response))
 
 async def handle_command(command, message):
     if command == "mute me":
@@ -75,10 +88,15 @@ async def handle_command(command, message):
         await unmute(message.author)
 
 
+async def Admin_Data():
+    members = discord_client.get_all_members()
+
+
 # Event for receiving a message
 @discord_client.event
 async def on_message(message):
     # Ignore messages sent by the bot
+    server_guild = discord_client.get_guild(GUILD_ID)
     if message.author == discord_client.user:
         return
 
@@ -101,14 +119,20 @@ async def on_message(message):
             await report_curse(message, transcription)
             await Ban_Users(message.author,message)
 
-        if transcription.splitlines('chat G P T'):
-             await send_response(transcription,message)
+        #if transcription.splitlines('chat G P T'):
+         #    await send_response(transcription,message)
+
+        if transcription.splitlines('admin data'):
+            for guild in discord_client.guilds:
+                if guild == server_guild:
+                    members = [member.name async for member in guild.fetch_members(limit=None)]
+                    set(members)
+                    print(members)
 
         await handle_command(transcription, message)
 
         # Delete the file after processing
         os.remove(audio_filename)
-
 
 def report_to_receiver():
     receiver = os.getenv('RECEIVER_EMAIL_ADDRESS')
@@ -121,15 +145,6 @@ def report_to_receiver():
 
     email_sender_client.send_email('daily_report', email_body, [receiver])
     reports_list.clear()
-
-async def send_response(transcription, message):
-
-    response = ask_bot(transcription)
-    if len(response) > 2000:
-        messages = split_message(response)
-        for msg in messages:
-            await message.channel.send(msg)
-    await message.channel.send((response))
 
 def split_message(content, max_length=2000):
 
